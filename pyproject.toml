@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "mtflow"
+version = "0.0.1.dev1"
+description = "Machine Trading Lifecycle"
+license = "Apache-2.0"
+authors = ["Stephen Yau <softwareentrepreneer+mtflow@gmail.com>"]
+readme = "README.md"
+homepage = "https://pfund.ai"
+repository = "https://github.com/PFund-Software-Ltd/mtflow"
+documentation = "https://mtflow-docs.pfund.ai"
+keywords = []
+classifiers = [
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Information Technology",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
