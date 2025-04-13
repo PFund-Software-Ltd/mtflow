@@ -1,17 +1,18 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 if TYPE_CHECKING:
-    from pfeed.typing import GenericData, GenericFrame, GenericSeries
-    from pfeed.data_models.base_data_model import BaseDataModel
+    from pfeed.typing import GenericFrame, GenericSeries
+    from pfeed.data_models.pfund_data_model import PFundDataModel
     from pfeed.storages.base_storage import BaseStorage
-    from pfund.datas.data_base import BaseData
+    from pfeed.feeds.pfund.pfund_feed import PFundFeed
+    from pfund.datas.data_time_based import TimeBasedData
     from mtflow.registry import Registry
 
 from logging import Logger
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-import pfeed as pe
+from pfeed import create_storage, PFund
 from pfeed.enums import DataTool, DataStorage, DataCategory
 from pfund.enums import Environment
 from mtflow.stores.market_data_store import MarketDataStore
@@ -36,14 +37,21 @@ class TradingStore:
         self._logger: Logger | None = None
         self._registry = registry
         self._scheduler = BackgroundScheduler()
+        self._feed: PFundFeed = PFund(
+            env=env.value, 
+            data_tool=data_tool.value,
+            use_ray=False,  # FIXME
+            use_deltalake=True,
+        )
         self._data_stores = {
             DataCategory.market_data: MarketDataStore(
                 data_tool=data_tool,
+                storage=storage,
+                storage_options=storage_options,
                 registry=registry._data_registries[DataCategory.market_data],
+                feed=self._feed,
             ),
         }
-        # FIXME:
-        # self._pfund = pe.PFund(env=env, data_tool=data_tool)
 
     @property
     def market(self):
@@ -51,6 +59,8 @@ class TradingStore:
     
     def _set_logger(self, logger: Logger):
         self._logger = logger
+        for store in self._data_stores.values():
+            store._set_logger(logger)
     
     def _schedule_task(self, func: Callable, **kwargs):
         self._scheduler.add_job(func, trigger='interval', **kwargs)
@@ -58,9 +68,12 @@ class TradingStore:
     def show_dependencies(self):
         self._registry.show_dependencies()
 
-    def get_market_data_df(self, data: BaseData | None=None, unstack: bool=False) -> GenericFrame | None:
-        pass
-    get_data_df = get_market_data_df
+    def get_market_data_df(self, data: TimeBasedData | None=None, unstack: bool=False) -> GenericFrame | None:
+        if data is None:
+            return self.market.data
+        else:
+            # TODO: filter data based on data.product and data.resolution
+            return self.market.data
     
     def get_complete_df(self) -> GenericFrame | None:
         pass
@@ -108,33 +121,27 @@ class TradingStore:
     def _get_df(self) -> GenericFrame | None:
         pass
 
-    def materialize(self):
+    def _materialize(self):
         for data_store in self._data_stores.values():
-            data_store.materialize(
-                storage=self._storage,
-                storage_options=self._storage_options,
-            )
-    
-    def persist_to_storage(
-        self, 
-        data: GenericData, 
-        data_model: BaseDataModel, 
-        data_domain: str,
-        metadata: dict | None=None,  # TODO: add run_id, ingestion_time (if delta table has it) etc.?
-    ):
+            data_store._materialize()
+        
+    def _write_to_storage(self, data: GenericFrame):
         '''
-        Load data from the online store (TradingStore) to the offline store (pfeed's data lakehouse).
+        Load pfund's component (strategy/model/feature/indicator) data from the online store (TradingStore) to the offline store (pfeed's data lakehouse).
         '''
-        storage: BaseStorage = pe.create_storage(
+        data_model: PFundDataModel = self._feed.create_data_model(...)
+        data_layer = 'curated'
+        data_domain = 'trading_data'
+        metadata = {}  # TODO
+        storage: BaseStorage = create_storage(
             storage=self._storage.value,
             data_model=data_model,
-            data_layer='curated',
+            data_layer=data_layer,
             data_domain=data_domain,
             storage_options=self._storage_options,
         )
         storage.write_data(data, metadata=metadata)
-        # FIXME: add logger
-        # self.logger.info(f'wrote {data_model} data to {storage.name} in {data_layer=}')
+        self._logger.info(f'wrote {data_model} data to {storage.name} in {data_layer=} {data_domain=}')
 
     # TODO: when pfeed's data recording is ready
     def _rehydrate_from_lakehouse(self):

@@ -23,7 +23,7 @@ class Registry:
     def show_dependencies(self):
         raise NotImplementedError
     
-    def register_component(
+    def _register_component(
         self, 
         consumer: ComponentName, 
         component: ComponentName,

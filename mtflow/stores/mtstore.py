@@ -83,12 +83,13 @@ class MTStore:
         if self.is_frozen():
             raise ValueError(f'MTStore is frozen, no more {data_category} can be registered')
         consumer = kwargs['consumer']
-        assert consumer in self._trading_stores, f'No trading store found for {consumer}, cannot register {data_category}'
+        if consumer not in self._trading_stores:
+            raise ValueError(f'No trading store found for {consumer}, cannot register {data_category}')
         if data_category == DataCategory.market_data:
             data_store = self._trading_stores[consumer].market
         else:
             raise ValueError(f'{data_category} registry is not supported')
-        data_store.register_data(**kwargs)
+        data_store._register_data(**kwargs)
     
     def register_market_data(
         self,
@@ -112,7 +113,7 @@ class MTStore:
     ):
         if self.is_frozen():
             raise ValueError(f'MTStore is frozen, no more {component_type} can be registered')
-        self._registry.register_component(consumer, component, metadata, component_type)
+        self._registry._register_component(consumer, component, metadata, component_type)
     
     def register_strategy(self, consumer: ComponentName, component: ComponentName, metadata: dict):
         self._register_component(consumer, component, metadata, ComponentType.strategy)

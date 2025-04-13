@@ -25,7 +25,7 @@ ResolutionRepr: TypeAlias = str
 
 @dataclass
 class MarketDataMetadata:
-    data_source: tDATA_SOURCE
+    data_source: DataSource
     data_origin: str
     product: BaseProduct
     resolution: Resolution
@@ -39,15 +39,15 @@ class MarketDataStore(BaseDataStore):
     _datas: dict[MarketDataKey, GenericFrame]
     
     @staticmethod
-    def generate_data_key(
-        data_source: tDATA_SOURCE,
+    def _generate_data_key(
+        data_source: DataSource,
         data_origin: str,
-        product: ProductName,
-        resolution: ResolutionRepr,
+        product: BaseProduct,
+        resolution: Resolution,
     ) -> MarketDataKey:
-        return f"{data_source}:{data_origin}:{product}:{resolution}"
+        return f"{data_source}:{data_origin}:{product.name}:{repr(resolution)}"
     
-    def register_data(
+    def _register_data(
         self,
         consumer: ComponentName,
         data_source: tDATA_SOURCE,
@@ -57,13 +57,13 @@ class MarketDataStore(BaseDataStore):
         start_date: datetime.date,
         end_date: datetime.date,
     ) -> MarketDataKey:
-        data_source = DataSource[data_source.upper()].value
-        data_origin = data_origin or data_source
-        data_key = self.generate_data_key(
+        data_source = DataSource[data_source.upper()]
+        data_origin = data_origin or data_source.value
+        data_key = self._generate_data_key(
             data_source=data_source,
             data_origin=data_origin,
-            product=product.name,
-            resolution=repr(resolution),
+            product=product,
+            resolution=resolution,
         )
         if data_key not in self._registry:
             self._registry[data_key] = MarketDataMetadata(
@@ -79,47 +79,39 @@ class MarketDataStore(BaseDataStore):
             if consumer not in self._registry[data_key].consumers:
                 self._registry[data_key].consumers.append(consumer)
 
-    def materialize(self, storage: DataStorage, storage_options: dict):
+    def _materialize(self):
         '''Loads data from pfeed's data lakehouse into the store'''
+        dfs = []
         for metadata in self._registry.values():
-            data_source: tDATA_SOURCE = metadata['data_source']
+            data_source: DataSource = metadata['data_source']
+            self._add_feed(data_source)
             data_origin = metadata['data_origin']
             product: BaseProduct = metadata['product']
             resolution: Resolution = metadata['resolution']
-            data_key = self.generate_data_key(
+            data_key = self._generate_data_key(
                 data_source=data_source,
                 data_origin=data_origin,
                 product=product.name,
                 resolution=repr(resolution),
             )
-            df = self.get_historical_data(
+            df = self._get_historical_data(
                 data_source=data_source,
                 data_origin=data_origin,
                 product=product,
                 resolution=resolution,
                 start_date=metadata['start_date'],
                 end_date=metadata['end_date'],
-                storage=storage,
-                storage_options=storage_options,
+                storage=self._storage,
+                storage_options=self._storage_options,
             )
             assert df is not None, f'No data found for {data_key}'
-            self._add_data(data_key, df)
+            dfs.append(df)
             # TODO: add data_source as new column? need to differentiate historical data from live data
-        # TODO: concat all dataframes
-        df = pl.concat(self._datas.values())
+        self._set_data(pl.concat(dfs))
     
-    def get_feed(self, data_source: tDATA_SOURCE, use_ray: bool=False) -> MarketFeed:
-        from pfeed import get_market_feed
-        return get_market_feed(
-            data_source=data_source,
-            data_tool=self._data_tool.value,
-            use_ray=use_ray,
-            use_deltalake=True,
-        )
-    
-    def get_historical_data(
+    def _get_historical_data(
         self,
-        data_source: tDATA_SOURCE,
+        data_source: DataSource,
         data_origin: str,
         product: BaseProduct,
         resolution: Resolution,
@@ -127,8 +119,14 @@ class MarketDataStore(BaseDataStore):
         end_date: datetime.date,
         storage: DataStorage,
         storage_options: dict,
-    ):
-        feed = self.get_feed(data_source, use_ray=...)
+    ) -> GenericFrame:
+        from pfeed import get_market_feed
+        feed = get_market_feed(
+            data_source=data_source.value,
+            data_tool=self._data_tool.value,
+            use_ray=False,  # FIXME
+            use_deltalake=True,
+        )
         lf: pl.LazyFrame = feed.retrieve(
             auto_transform=False,
         )
@@ -148,14 +146,6 @@ class MarketDataStore(BaseDataStore):
             storage_options=storage_options,
             retrieve_per_date=is_resample_required,
             **product.specs
-        )
-        data_model = feed.create_data_model(
-            product=product,
-            resolution=resolution,
-            start_date=start_date,
-            end_date=end_date,
-            data_origin=data_origin,
-            **product.specs,
         )
         # TEMP
         print('***got historical data:\n', df)
