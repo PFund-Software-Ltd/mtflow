@@ -1,22 +1,20 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, Callable
 if TYPE_CHECKING:
-    from pfeed.typing import tSTORAGE, tDATA_TOOL, tDATA_SOURCE, GenericData, GenericFrame, GenericSeries
+    from pfeed.typing import GenericData, GenericFrame, GenericSeries
     from pfeed.data_models.base_data_model import BaseDataModel
     from pfeed.storages.base_storage import BaseStorage
-    from pfund.typing import tENVIRONMENT
     from pfund.datas.data_base import BaseData
-    from pfund.datas.data_time_based import TimeBasedData
     from mtflow.registry import Registry
 
-import datetime
 from logging import Logger
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 import pfeed as pe
-from pfeed.enums import DataTool, DataLayer, DataStorage
+from pfeed.enums import DataTool, DataStorage, DataCategory
 from pfund.enums import Environment
 from mtflow.stores.market_data_store import MarketDataStore
-from mtflow.typing import ComponentName, StrategyName, ModelName, IndicatorName, FeatureName
 
 
 class TradingStore:
@@ -37,44 +35,29 @@ class TradingStore:
         self._storage_options = storage_options
         self._logger: Logger | None = None
         self._registry = registry
-        self._market_data_store = MarketDataStore(
-            data_tool=data_tool,
-            registry=registry._market_data_registry,
-            data_key=registry._generate_market_data_key,
-        )
+        self._scheduler = BackgroundScheduler()
+        self._data_stores = {
+            DataCategory.market_data: MarketDataStore(
+                data_tool=data_tool,
+                registry=registry._data_registries[DataCategory.market_data],
+            ),
+        }
         # FIXME:
-        # self._feed = pe.PFund(env=env, data_tool=data_tool)
+        # self._pfund = pe.PFund(env=env, data_tool=data_tool)
 
     @property
-    def registry(self):
-        return self._registry
-    
-    # EXTEND
-    @property
-    def data_stores(self):
-        return {
-            'market_data': self._market_data_store,
-        }
-    
-    @property
     def market(self):
-        return self._market_data_store
-    
-    @property
-    def storage(self) -> DataStorage:
-        return self._storage
+        return self._data_stores[DataCategory.market_data]
     
     def _set_logger(self, logger: Logger):
         self._logger = logger
     
-    # TODO: show the DAG of the trading store
-    def show_DAG(self):
-        self._registry.show_DAG()
-
-    # TODO: make mtstore frozen, no changes allowed
-    def _freeze(self):
-        pass
+    def _schedule_task(self, func: Callable, **kwargs):
+        self._scheduler.add_job(func, trigger='interval', **kwargs)
     
+    def show_dependencies(self):
+        self._registry.show_dependencies()
+
     def get_market_data_df(self, data: BaseData | None=None, unstack: bool=False) -> GenericFrame | None:
         pass
     get_data_df = get_market_data_df
@@ -84,7 +67,7 @@ class TradingStore:
     
     def get_strategy_df(
         self, 
-        name: StrategyName='', 
+        name: str='', 
         include_data: bool=False,
         as_series: bool=False,
     ) -> GenericFrame | GenericSeries | None:
@@ -100,7 +83,7 @@ class TradingStore:
     
     def get_model_df(
         self, 
-        name: ModelName='', 
+        name: str='', 
         include_data: bool=False,
         as_series: bool=False,
     ) -> GenericFrame | GenericSeries | None:
@@ -108,7 +91,7 @@ class TradingStore:
     
     def get_indicator_df(
         self, 
-        name: IndicatorName='', 
+        name: str='', 
         include_data: bool=False,
         as_series: bool=False,
     ) -> GenericFrame | GenericSeries | None:
@@ -116,7 +99,7 @@ class TradingStore:
      
     def get_feature_df(
         self, 
-        name: FeatureName='', 
+        name: str='', 
         include_data: bool=False,
         as_series: bool=False,
     ) -> GenericFrame | GenericSeries | None:
@@ -126,30 +109,37 @@ class TradingStore:
         pass
 
     def materialize(self):
-        for data_store in self.data_stores.values():
+        for data_store in self._data_stores.values():
             data_store.materialize(
                 storage=self._storage,
                 storage_options=self._storage_options,
             )
     
-    def _write_to_storage(
+    def persist_to_storage(
         self, 
         data: GenericData, 
         data_model: BaseDataModel, 
         data_domain: str,
-        metadata: dict | None=None,
+        metadata: dict | None=None,  # TODO: add run_id, ingestion_time (if delta table has it) etc.?
     ):
         '''
         Load data from the online store (TradingStore) to the offline store (pfeed's data lakehouse).
         '''
-        data_layer = self.data_layer.value
         storage: BaseStorage = pe.create_storage(
             storage=self._storage.value,
             data_model=data_model,
-            data_layer=data_layer,
+            data_layer='curated',
             data_domain=data_domain,
             storage_options=self._storage_options,
         )
         storage.write_data(data, metadata=metadata)
         # FIXME: add logger
         # self.logger.info(f'wrote {data_model} data to {storage.name} in {data_layer=}')
+
+    # TODO: when pfeed's data recording is ready
+    def _rehydrate_from_lakehouse(self):
+        '''
+        Load data from pfeed's data lakehouse if theres missing data after backfilling.
+        '''
+        pass
+    

@@ -1,19 +1,24 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, TypeAlias
 if TYPE_CHECKING:
     from pfeed.typing import tDATA_TOOL, tDATA_SOURCE
     from pfund.typing import tENVIRONMENT
     from pfund.datas.resolution import Resolution
     from pfund.products.product_base import BaseProduct
+    from pfund.typing import ComponentName
 
 import datetime
 from logging import Logger
 
-from pfeed.enums import DataTool, DataStorage
-from pfund.enums import Environment
+from apscheduler.schedulers.background import BackgroundScheduler
+
+from pfeed.enums import DataTool, DataStorage, DataCategory
+from pfund.enums import Environment, ComponentType
 from mtflow.stores.trading_store import TradingStore
-from mtflow.typing import StrategyName, ComponentName
 from mtflow.registry import Registry
+
+
+StrategyName: TypeAlias = str
 
 
 class MTStore:
@@ -30,17 +35,10 @@ class MTStore:
         self._trading_stores: dict[StrategyName, TradingStore] = {}
         self._logger: Logger | None = None
         self._registry = Registry()
+        self._scheduler = BackgroundScheduler()
         self._frozen = False
     
-    @property
-    def registry(self):
-        return self._registry
-    
-    @property
-    def trading_stores(self):
-        return self._trading_stores
-    
-    def _freeze(self):
+    def freeze(self):
         self._frozen = True
     
     def is_frozen(self):
@@ -48,11 +46,14 @@ class MTStore:
     
     def _set_logger(self, logger: Logger):
         self._logger = logger
+    
+    def _schedule_task(self, func: Callable, **kwargs):
+        self._scheduler.add_job(func, trigger='interval', **kwargs)
         
-    # TODO
-    def show_DAG(self, name: StrategyName):
+    # TODO: show ALL dependencies when name=None
+    def show_dependencies(self, name: StrategyName | None=None):
         trading_store = self.get_trading_store(name)
-        trading_store.show_DAG()
+        trading_store.show_dependencies()
         
     def _create_trading_store(self):
         trading_store = TradingStore(
@@ -78,30 +79,49 @@ class MTStore:
             raise ValueError(f'Trading store {name} does not exist')
         return self._trading_stores[name]
     
+    def _register_data(self, data_category: DataCategory, **kwargs):
+        if self.is_frozen():
+            raise ValueError(f'MTStore is frozen, no more {data_category} can be registered')
+        consumer = kwargs['consumer']
+        assert consumer in self._trading_stores, f'No trading store found for {consumer}, cannot register {data_category}'
+        if data_category == DataCategory.market_data:
+            data_store = self._trading_stores[consumer].market
+        else:
+            raise ValueError(f'{data_category} registry is not supported')
+        data_store.register_data(**kwargs)
+    
     def register_market_data(
-        self, 
+        self,
         consumer: ComponentName,
-        data_source: tDATA_SOURCE, 
-        data_origin: str, 
-        product: BaseProduct, 
+        data_source: tDATA_SOURCE,
+        data_origin: str,
+        product: BaseProduct,
         resolution: Resolution,
         start_date: datetime.date,
-        end_date: datetime.date, 
+        end_date: datetime.date,
+    ):
+        params = {k: v for k, v in locals().items() if k != 'self'}
+        self._register_data(DataCategory.market_data, **params)
+
+    def _register_component(
+        self, 
+        consumer: ComponentName,
+        component: ComponentName,
+        metadata: dict,
+        component_type: ComponentType,
     ):
         if self.is_frozen():
-            raise ValueError('MTStore is frozen, no more market data can be registered')
-        self._registry.register_market_data(
-            consumer=consumer,
-            data_source=data_source,
-            data_origin=data_origin,
-            product=product,
-            resolution=resolution,
-            start_date=start_date,
-            end_date=end_date,
-        )
+            raise ValueError(f'MTStore is frozen, no more {component_type} can be registered')
+        self._registry.register_component(consumer, component, metadata, component_type)
     
-    def materialize(self):
-        if not self.is_frozen():
-            self._freeze()
-        for trading_store in self._trading_stores.values():
-            trading_store.materialize()
+    def register_strategy(self, consumer: ComponentName, component: ComponentName, metadata: dict):
+        self._register_component(consumer, component, metadata, ComponentType.strategy)
+
+    def register_model(self, consumer: ComponentName, component: ComponentName, metadata: dict):
+        self._register_component(consumer, component, metadata, ComponentType.model)
+        
+    def register_feature(self, consumer: ComponentName, component: ComponentName, metadata: dict):
+        self._register_component(consumer, component, metadata, ComponentType.feature)
+        
+    def register_indicator(self, consumer: ComponentName, component: ComponentName, metadata: dict):
+        self._register_component(consumer, component, metadata, ComponentType.indicator)
