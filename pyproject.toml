@@ -38,15 +38,14 @@ core = [
     "pfeed[core] (>=0.0.4,<0.1.0)",
     "pyzmq (>=26.4.0,<27.0.0)",
     "psutil (>=7.0.0,<8.0.0)",
-    "evidently (>=0.6.7,<0.7.0); python_version < '4.0.0'",
     # TEMP: to be removed after experiments
     "wandb (>=0.19.9,<0.20.0)",
-    "feast (>=0.47.0,<0.48.0)",
     "deepeval (>=2.6.5,<3.0.0); python_version < '4.0.0'",
+    # "evidently (>=0.7.0,<0.8.0); python_version < '4.0.0'",
+    # "langfuse (>=2.60.2,<2.61.0); python_version < '4.0.0'",
     "unitycatalog-ai (>=0.3.0,<0.4.0)",
     "unitycatalog-client (>=0.2.1,<0.3.0)",
     "weave (>=0.51.41,<0.52.0)",
-    "langfuse (>=2.60.2,<2.61.0); python_version < '4.0.0'",
 ]
 
 [project.urls]
