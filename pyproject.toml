@@ -1,6 +1,6 @@
 [project]
 name = "mtflow"
-version = "0.0.1.dev1"
+version = "0.0.1.dev2"
 description = "Machine Trading Lifecycle"
 license = "Apache-2.0"
 authors = [
@@ -17,12 +17,11 @@ classifiers = [
     "Topic :: Office/Business :: Financial",
     "Topic :: Office/Business :: Financial :: Investment",
     "Topic :: Software Development :: Libraries",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "pfeed (>=0.0.4,<0.1.0)",
     "apscheduler (>=3.11.0,<4.0.0)",
@@ -43,6 +42,7 @@ core = [
     "deepeval (>=2.6.5,<3.0.0); python_version < '4.0.0'",
     # "evidently (>=0.7.0,<0.8.0); python_version < '4.0.0'",
     # "langfuse (>=2.60.2,<2.61.0); python_version < '4.0.0'",
+    # "agentops "
     "unitycatalog-ai (>=0.3.0,<0.4.0)",
     "unitycatalog-client (>=0.2.1,<0.3.0)",
     "weave (>=0.51.41,<0.52.0)",

@@ -13,7 +13,7 @@ from logging import Logger
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from pfeed import create_storage, PFund
-from pfeed.enums import DataTool, DataStorage, DataCategory
+from pfeed.enums import DataTool, DataStorage, DataCategory, DataLayer
 from pfund.enums import Environment
 from mtflow.stores.market_data_store import MarketDataStore
 
@@ -52,6 +52,8 @@ class TradingStore:
                 feed=self._feed,
             ),
         }
+        self._df: GenericFrame | None = None
+        self._df_updates = []
 
     @property
     def market(self):
@@ -130,13 +132,13 @@ class TradingStore:
         Load pfund's component (strategy/model/feature/indicator) data from the online store (TradingStore) to the offline store (pfeed's data lakehouse).
         '''
         data_model: PFundDataModel = self._feed.create_data_model(...)
-        data_layer = 'curated'
+        data_layer = DataLayer.CURATED
         data_domain = 'trading_data'
         metadata = {}  # TODO
         storage: BaseStorage = create_storage(
             storage=self._storage.value,
             data_model=data_model,
-            data_layer=data_layer,
+            data_layer=data_layer.value,
             data_domain=data_domain,
             storage_options=self._storage_options,
         )

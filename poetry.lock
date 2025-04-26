@@ -5433,14 +5433,14 @@ files = [
 
 [[package]]
 name = "narwhals"
-version = "1.34.1"
+version = "1.35.0"
 description = "Extremely lightweight compatibility layer between dataframe libraries"
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "narwhals-1.34.1-py3-none-any.whl", hash = "sha256:aee49a30d1624371ad975ede2bab16cd125ab5df0fd185e2f4757e103b074d27"},
-    {file = "narwhals-1.34.1.tar.gz", hash = "sha256:8941a08cf62f39ae67be945090b20a19c51fb9048ac909cad2f95aee23f9e302"},
+    {file = "narwhals-1.35.0-py3-none-any.whl", hash = "sha256:7562af132fa3f8aaaf34dc96d7ec95bdca29d1c795e8fcf14e01edf1d32122bc"},
+    {file = "narwhals-1.35.0.tar.gz", hash = "sha256:07477d18487fbc940243b69818a177ed7119b737910a8a254fb67688b48a7c96"},
 ]
 
 [package.extras]
@@ -6422,11 +6422,11 @@ confluent-kafka = {version = ">=2.8.2,<3.0.0", optional = true}
 deltalake = {version = ">=0.25.5,<0.26.0", optional = true}
 duckdb = ">=1.2.2,<2.0.0"
 minio = {version = ">=7.2.15,<8.0.0", optional = true}
-narwhals = ">=1.34.1,<2.0.0"
+narwhals = ">=1.35.0,<2.0.0"
 pandas = ">=2.2.3,<3.0.0"
 pandera = ">=0.23.1,<0.24.0"
 pfund = ">=0.0.2,<0.1.0"
-polars = ">=1.27.0,<2.0.0"
+polars = ">=1.27.1,<2.0.0"
 prefect = {version = ">=3.3.4,<4.0.0", optional = true, markers = "python_version < \"3.14.0\""}
 pyarrow = ">=18.0.0,<19.0.0"
 pydantic = ">=2.11.3,<3.0.0"
@@ -6485,8 +6485,8 @@ develop = true
 click = ">=8.1.8,<9.0.0"
 httpx = ">=0.28.1,<0.29.0"
 mtflow = [
-    {version = ">=0.0.1.dev1,<0.1.0"},
-    {version = ">=0.0.1.dev1,<0.1.0", extras = ["core"], optional = true},
+    {version = ">=0.0.1.dev2,<0.1.0"},
+    {version = ">=0.0.1.dev2,<0.1.0", extras = ["core"], optional = true},
 ]
 orjson = ">=3.10.16,<4.0.0"
 pfolio = [
@@ -6504,7 +6504,7 @@ websocket-client = ">=1.8.0,<2.0.0"
 websockets = ">=15.0.1,<16.0.0"
 
 [package.extras]
-core = ["mtflow[core] (>=0.0.1.dev1,<0.1.0)", "pfolio[core] (>=0.0.2,<0.1.0)"]
+core = ["mtflow[core] (>=0.0.1.dev2,<0.1.0)", "pfolio[core] (>=0.0.2,<0.1.0)"]
 telegram = ["python-telegram-bot (>=21.11.1,<22.0.0)"]
 
 [package.source]
@@ -6702,19 +6702,19 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "polars"
-version = "1.27.0"
+version = "1.27.1"
 description = "Blazingly fast DataFrame library"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "polars-1.27.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:8df053bc9586e0672e99be43c5645f7b762c352d9212816c6cf238179af602e9"},
-    {file = "polars-1.27.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:3b6795f745021ca63742a382d1feb39e2c0b5b7d17657a4484683301e869a86f"},
-    {file = "polars-1.27.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b53cb3da131b0bceaa4fb0139ac916e516247e44184f863d09a6618a382bd04c"},
-    {file = "polars-1.27.0-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:74cf7f972861d5d1bcdef017a4d4af3ce30036f9afaa609d5fc04b2fb3764f66"},
-    {file = "polars-1.27.0-cp39-abi3-win_amd64.whl", hash = "sha256:83837056286f78e8a820a13ed803f0b27ea5015997a12f64cd0c8ff1b18fc555"},
-    {file = "polars-1.27.0-cp39-abi3-win_arm64.whl", hash = "sha256:8824ecd9796f8663661ab147a25945e4d21a5b8dee5f2ed985b50633ef40038b"},
-    {file = "polars-1.27.0.tar.gz", hash = "sha256:5207355926ad0a6a1b6e5c97fc8106f5c0618a22f5aaa84db233d77b10ef8118"},
+    {file = "polars-1.27.1-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:ba7ad4f8046d00dd97c1369e46a4b7e00ffcff5d38c0f847ee4b9b1bb182fb18"},
+    {file = "polars-1.27.1-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:339e3948748ad6fa7a42e613c3fb165b497ed797e93fce1aa2cddf00fbc16cac"},
+    {file = "polars-1.27.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f801e0d9da198eb97cfb4e8af4242b8396878ff67b655c71570b7e333102b72b"},
+    {file = "polars-1.27.1-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:4d18a29c65222451818b63cd397b2e95c20412ea0065d735a20a4a79a7b26e8a"},
+    {file = "polars-1.27.1-cp39-abi3-win_amd64.whl", hash = "sha256:a4f832cf478b282d97f8bf86eeae2df66fa1384de1c49bc61f7224a10cc6a5df"},
+    {file = "polars-1.27.1-cp39-abi3-win_arm64.whl", hash = "sha256:4f238ee2e3c5660345cb62c0f731bbd6768362db96c058098359ecffa42c3c6c"},
+    {file = "polars-1.27.1.tar.gz", hash = "sha256:94fcb0216b56cd0594aa777db1760a41ad0dfffed90d2ca446cf9294d2e97f02"},
 ]
 
 [package.dependencies]

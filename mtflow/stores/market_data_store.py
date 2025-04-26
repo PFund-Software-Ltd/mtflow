@@ -84,7 +84,6 @@ class MarketDataStore(BaseDataStore):
         dfs = []
         for metadata in self._registry.values():
             data_source: DataSource = metadata['data_source']
-            self._add_feed(data_source)
             data_origin = metadata['data_origin']
             product: BaseProduct = metadata['product']
             resolution: Resolution = metadata['resolution']

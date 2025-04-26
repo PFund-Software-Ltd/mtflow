@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 from logging import Logger
 
 from pfeed import create_storage
+from pfeed.enums import DataLayer
 
 
 DataKey: TypeAlias = str
@@ -30,8 +31,9 @@ class BaseDataStore(ABC):
         self._storage_options = storage_options
         self._registry = registry
         self._logger: Logger | None = None
-        self._data: GenericData | None = None
         self._feed: PFundFeed = feed
+        self._data: GenericData | None = None
+        self._data_updates = []
         
     @staticmethod
     @abstractmethod
@@ -64,18 +66,19 @@ class BaseDataStore(ABC):
     def _set_data(self, data: GenericData):
         self._data = data
     
+    # TODO: I/O should be async
     def _write_to_storage(self, data: GenericData):
         '''
         Load data (e.g. market data) from the online store (TradingStore) to the offline store (pfeed's data lakehouse).
         '''
         data_model: PFundDataModel = self._feed.create_data_model(...)
-        data_layer = 'curated'
+        data_layer = DataLayer.CURATED
         data_domain = 'trading_data'
         metadata = {}  # TODO
         storage: BaseStorage = create_storage(
             storage=self._storage.value,
             data_model=data_model,
-            data_layer=data_layer,
+            data_layer=data_layer.value,
             data_domain=data_domain,
             storage_options=self._storage_options,
         )
