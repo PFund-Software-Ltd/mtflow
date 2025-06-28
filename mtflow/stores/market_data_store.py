@@ -2,15 +2,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TypeAlias
 if TYPE_CHECKING:
     import datetime
-    from pfeed.typing import tDATA_SOURCE, GenericFrame
+    from pfeed.typing import tDataSource, GenericFrame
     from pfeed.enums import DataStorage
     from pfeed.feeds.market_feed import MarketFeed
     from pfeed.data_models.market_data_model import MarketDataModel
     from pfund.typing import ComponentName
     from pfund.datas.resolution import Resolution
     from pfund.products.product_base import BaseProduct
-
-from dataclasses import dataclass, field
 
 import polars as pl
 
@@ -23,65 +21,13 @@ ProductName: TypeAlias = str
 ResolutionRepr: TypeAlias = str
 
 
-@dataclass
-class MarketDataMetadata:
-    data_source: DataSource
-    data_origin: str
-    product: BaseProduct
-    resolution: Resolution
-    start_date: datetime.date
-    end_date: datetime.date
-    consumers: list[ComponentName] = field(default_factory=list)
-
-
 class MarketDataStore(BaseDataStore):
-    _registry: dict[MarketDataKey, MarketDataMetadata]
     _datas: dict[MarketDataKey, GenericFrame]
     
-    @staticmethod
-    def _generate_data_key(
-        data_source: DataSource,
-        data_origin: str,
-        product: BaseProduct,
-        resolution: Resolution,
-    ) -> MarketDataKey:
-        return f"{data_source}:{data_origin}:{product.name}:{repr(resolution)}"
-    
-    def _register_data(
-        self,
-        consumer: ComponentName,
-        data_source: tDATA_SOURCE,
-        data_origin: str,
-        product: BaseProduct,
-        resolution: Resolution,
-        start_date: datetime.date,
-        end_date: datetime.date,
-    ) -> MarketDataKey:
-        data_source = DataSource[data_source.upper()]
-        data_origin = data_origin or data_source.value
-        data_key = self._generate_data_key(
-            data_source=data_source,
-            data_origin=data_origin,
-            product=product,
-            resolution=resolution,
-        )
-        if data_key not in self._registry:
-            self._registry[data_key] = MarketDataMetadata(
-                data_source=data_source,
-                data_origin=data_origin,
-                product=product,
-                resolution=resolution,
-                start_date=start_date,
-                end_date=end_date,
-                consumers=[consumer],
-            )
-        else:
-            if consumer not in self._registry[data_key].consumers:
-                self._registry[data_key].consumers.append(consumer)
-
     def _materialize(self):
         '''Loads data from pfeed's data lakehouse into the store'''
         dfs = []
+        # FIXME: use data objects directly instead of metadata
         for metadata in self._registry.values():
             data_source: DataSource = metadata['data_source']
             data_origin = metadata['data_origin']

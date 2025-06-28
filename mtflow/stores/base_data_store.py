@@ -1,10 +1,10 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pfeed.enums import DataTool, DataStorage
     from pfeed.typing import GenericData
-    from pfeed.feeds.pfund.pfund_feed import PFundFeed
-    from pfeed.data_models.pfund_data_model import PFundDataModel
+    from pfeed.sources.pfund.engine_feed import PFundEngineFeed
+    from pfeed.sources.pfund.data_model import PFundDataModel
     from pfeed.storages.base_storage import BaseStorage
     
 from abc import ABC, abstractmethod
@@ -14,36 +14,22 @@ from pfeed import create_storage
 from pfeed.enums import DataLayer
 
 
-DataKey: TypeAlias = str
-
-
 class BaseDataStore(ABC):
     def __init__(
         self, 
         data_tool: DataTool,
         storage: DataStorage,
         storage_options: dict,
-        registry: dict,
-        feed: PFundFeed,
+        feed: PFundEngineFeed,
     ):
         self._data_tool = data_tool
         self._storage = storage
         self._storage_options = storage_options
-        self._registry = registry
         self._logger: Logger | None = None
-        self._feed: PFundFeed = feed
+        self._feed: PFundEngineFeed = feed
         self._data: GenericData | None = None
         self._data_updates = []
         
-    @staticmethod
-    @abstractmethod
-    def _generate_data_key(self, *args, **kwargs) -> DataKey:
-        pass
-    
-    @abstractmethod
-    def _register_data(self, *args, **kwargs):
-        pass
-    
     @abstractmethod
     def _materialize(self, *args, **kwargs):
         pass

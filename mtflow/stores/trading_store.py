@@ -1,19 +1,17 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    import datetime
+    from logging import Logger
+    from pfeed.enums import DataTool, DataStorage
     from pfeed.typing import GenericFrame, GenericSeries
-    from pfeed.data_models.pfund_data_model import PFundDataModel
     from pfeed.storages.base_storage import BaseStorage
-    from pfeed.feeds.pfund.pfund_feed import PFundFeed
+    from pfeed.sources.pfund.engine_feed import PFundEngineFeed
+    from pfeed.sources.pfund.data_model import PFundDataModel
     from pfund.datas.data_time_based import TimeBasedData
-    from mtflow.registry import Registry
+    from pfund.typing import DataParamsDict
 
-from logging import Logger
-
-from apscheduler.schedulers.background import BackgroundScheduler
-
-from pfeed import create_storage, PFund
-from pfeed.enums import DataTool, DataStorage, DataCategory, DataLayer
+from pfeed.enums import DataCategory, DataLayer
 from pfund.enums import Environment
 from mtflow.stores.market_data_store import MarketDataStore
 
@@ -22,33 +20,29 @@ class TradingStore:
     '''
     A TradingStore is a store that contains all data used in trading, from market data, computed features, to model predictions etc.
     '''
-    def __init__(
-        self,
-        env: Environment,
-        data_tool: DataTool,
-        storage: DataStorage,
-        storage_options: dict,
-        registry: Registry,
-    ):
+    def __init__(self, env: Environment, data_params: DataParamsDict):
+        from pfeed.sources.pfund import PFund
+
+        self._logger = None
         self._env = env
-        self._data_tool = data_tool
-        self._storage = storage
-        self._storage_options = storage_options
-        self._logger: Logger | None = None
-        self._registry = registry
-        self._scheduler = BackgroundScheduler()
-        self._feed: PFundFeed = PFund(
-            env=env.value, 
-            data_tool=data_tool.value,
-            use_ray=False,  # FIXME
-            use_deltalake=True,
-        )
+        self._data_params: DataParamsDict = data_params
+        
+        
+        # FIXME
+        # self._feed: PFundEngineFeed = PFund(
+        #     env=env.value,
+        #     data_tool=data_tool.value,
+        #     use_ray=False,  # FIXME
+        #     use_deltalake=True,
+        # )
+        self._feed = None
+        
+        
         self._data_stores = {
-            DataCategory.market_data: MarketDataStore(
-                data_tool=data_tool,
-                storage=storage,
-                storage_options=storage_options,
-                registry=registry._data_registries[DataCategory.market_data],
+            DataCategory.MARKET_DATA: MarketDataStore(
+                data_tool=data_params['data_tool'],
+                storage=data_params['storage'],
+                storage_options=data_params['storage_options'],
                 feed=self._feed,
             ),
         }
@@ -56,20 +50,15 @@ class TradingStore:
         self._df_updates = []
 
     @property
-    def market(self):
-        return self._data_stores[DataCategory.market_data]
-    
+    def market_data_store(self) -> MarketDataStore:
+        return self._data_stores[DataCategory.MARKET_DATA]
+    market = market_data_store
+
     def _set_logger(self, logger: Logger):
         self._logger = logger
         for store in self._data_stores.values():
             store._set_logger(logger)
     
-    def _schedule_task(self, func: Callable, **kwargs):
-        self._scheduler.add_job(func, trigger='interval', **kwargs)
-    
-    def show_dependencies(self):
-        self._registry.show_dependencies()
-
     def get_market_data_df(self, data: TimeBasedData | None=None, unstack: bool=False) -> GenericFrame | None:
         if data is None:
             return self.market.data
@@ -131,6 +120,8 @@ class TradingStore:
         '''
         Load pfund's component (strategy/model/feature/indicator) data from the online store (TradingStore) to the offline store (pfeed's data lakehouse).
         '''
+        from pfeed import create_storage
+        
         data_model: PFundDataModel = self._feed.create_data_model(...)
         data_layer = DataLayer.CURATED
         data_domain = 'trading_data'

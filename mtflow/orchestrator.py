@@ -1,7 +1,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
+    from ray.actor import ActorClass
     from pfund.typing import Component, ComponentName
+    from pfund.enums import RunMode
 
 import time
 import logging
@@ -12,15 +14,14 @@ except ImportError:
     pass
 try: 
     import ray
-    from ray.actor import ActorClass
+    from ray.actor import ActorHandle
     from ray._raylet import ObjectRef
 except ImportError:
     ray = None
-    ActorClass = None
+    ActorHandle = None
 
 from pfund import cprint
 from pfund.strategies.strategy_base import BaseStrategy
-from mtflow.kernel import RunMode
     
     
 # TODO: zeromq loop for components
@@ -67,12 +68,11 @@ class Orchestrator:
     '''
     Orchestrate Ray actors, and processes
     '''
-    _PROCESS_NO_PONG_TOLERANCE_IN_SECONDS = 30
+    PROCESS_NO_PONG_TOLERANCE_IN_SECONDS = 30
 
-    def __init__(self, mode: RunMode):
+    def __init__(self):
         self._logger = logging.getLogger('mtflow')
-        self._actors: dict[ComponentName, ActorClass] = {}
-        self._processes = {}
+        self._actors: dict[ComponentName, ActorHandle] = {}
 
         # FIXME: from strategy manager
         # self._is_running = defaultdict(bool)
@@ -82,9 +82,9 @@ class Orchestrator:
         # self._strategy_procs = {}
         # self._last_pong_ts = defaultdict(lambda: time.time())
     
-    def _init_ray(self, **kwargs):
+    def _init_ray(self):
         if not ray.is_initialized():
-            ray.init(**kwargs)
+            ray.init()
 
     def _shutdown_ray(self):
         if ray.is_initialized():
@@ -92,40 +92,15 @@ class Orchestrator:
     
     @staticmethod
     def is_actor(value: Any) -> bool:
-        return isinstance(value, ActorClass)
+        return isinstance(value, ActorHandle)
 
-    @staticmethod
-    def get_the_class_under_actor(Actor: ActorClass) -> type:
-        return Actor.__ray_actor_class__
+    def add_actor(self, component_name: str):
+        self._init_ray()
+        actor: ActorHandle = ray.get_actor(component_name)
+        self._actors[component_name] = actor
 
-    def add_actor(self, component: Component | ActorClass, auto_wrap: bool=True):
-        if not self.is_actor(component):
-            if auto_wrap:
-                component_actor: ActorClass = ray.remote(num_cpus=1)(component)
-            else:
-                raise ValueError(f'{component} is not an actor')
-        else:
-            component_actor: ActorClass = component
-            options = component_actor._default_options
-            if 'num_cpus' not in options:
-                component_actor._default_options['num_cpus'] = 1
-                cprint(
-                    f'WARNING: {component.name} is a Ray actor with no `num_cpus` set, set `num_cpus` to 1 automatically.\n'
-                    'The reason is that if num_cpus is not set, Ray will only use 1 CPU for scheduling, '
-                    'and 0 CPU for running. i.e. the actor will not be running properly.\n'
-                    'To avoid this warning, please set `num_cpus` in your @ray.remote() decorator.',
-                    style='bold'
-                )
-        self._actors[component.name] = component_actor
-    
     def remove_actor(self, component: Component):
         del self._actors[component.name]
-    
-    def add_process(self, process):
-        self._processes[process.name] = process
-    
-    def remove_process(self, process):
-        del self._processes[process.name]
     
     def _check_processes(self):
         for broker in self.brokers.values():
@@ -142,7 +117,7 @@ class Orchestrator:
         return strats or list(self.strategies)
     
     def is_process_healthy(self, strat: str):
-        if time.time() - self._last_pong_ts[strat] > self._PROCESS_NO_PONG_TOLERANCE_IN_SECONDS:
+        if time.time() - self._last_pong_ts[strat] > self.PROCESS_NO_PONG_TOLERANCE_IN_SECONDS:
             self._logger.error(f'process {strat=} is not responding')
             return False
         else:
@@ -192,6 +167,7 @@ class Orchestrator:
                 self.on_start(strat)
 
     def stop(self, strats: str|list[str]|None=None, in_parallel: bool=False, reason=''):
+        self._shutdown_ray()
         strats = self._adjust_input_strats(strats)
         for strat in strats:
             self._logger.debug(f'{strat} is stopping')
