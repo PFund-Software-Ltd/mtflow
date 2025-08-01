@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 if TYPE_CHECKING:
-    from pfund.typing import Component
+    from pfund._typing import Component
 
 from pfund.enums import RunMode
 from mtflow.utils.utils import is_wasm

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from ray.actor import ActorClass
-    from pfund.typing import Component, ComponentName
+    from pfund._typing import Component, ComponentName
     from pfund.enums import RunMode
 
 import time
@@ -64,6 +64,7 @@ def _start_process(strategy: BaseStrategy, stop_flag: Value):
 
 
 
+# TODO: should do ping-pong with the trade engine
 class Orchestrator:
     '''
     Orchestrate Ray actors, and processes

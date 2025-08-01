@@ -4,12 +4,12 @@ if TYPE_CHECKING:
     import datetime
     from logging import Logger
     from pfeed.enums import DataTool, DataStorage
-    from pfeed.typing import GenericFrame, GenericSeries
+    from pfeed._typing import GenericFrame, GenericSeries
     from pfeed.storages.base_storage import BaseStorage
     from pfeed.sources.pfund.engine_feed import PFundEngineFeed
     from pfeed.sources.pfund.data_model import PFundDataModel
     from pfund.datas.data_time_based import TimeBasedData
-    from pfund.typing import DataParamsDict
+    from pfund._typing import DataParamsDict
 
 from pfeed.enums import DataCategory, DataLayer
 from pfund.enums import Environment
@@ -36,7 +36,6 @@ class TradingStore:
         #     use_deltalake=True,
         # )
         self._feed = None
-        
         
         self._data_stores = {
             DataCategory.MARKET_DATA: MarketDataStore(

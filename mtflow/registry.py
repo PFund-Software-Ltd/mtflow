@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, TypeAlias
 if TYPE_CHECKING:
-    from pfund.typing import EngineName, ComponentName
+    from pfund._typing import EngineName, ComponentName
 
 from pfeed.enums.data_category import DataCategory
 from pfund.enums.component_type import ComponentType

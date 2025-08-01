@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Literal
 if TYPE_CHECKING:
-    from pfeed.typing import GenericFrame
+    from pfeed._typing import GenericFrame
     from pfund.strategies.strategy_base import BaseStrategy
     from pfund.engines.backtest_engine import BacktestEngine
     

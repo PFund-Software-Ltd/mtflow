@@ -25,11 +25,11 @@ requires-python = ">=3.11"
 dependencies = [
     "pfeed>=0.0.5",
     "apscheduler>=3.11.0",
-    "ipython>=8.23.0",
+    "ipython>=9.4.0",
     "gitpython>=3.1.44",
-    "joblib>=1.4.2",
-    "mlflow>=2.21.3",
-    "optuna>=4.2.1",
+    "joblib>=1.5.1",
+    "mlflow>=3.1.4",
+    "optuna>=4.4.0",
 ]
 
 [project.optional-dependencies]
@@ -38,14 +38,14 @@ core = [
     "pfeed[core]>=0.0.5",
     "psutil>=7.0.0",
     # TEMP: to be removed after experiments
-    "wandb>=0.19.9",
-    "deepeval>=2.6.5",
-    # "evidently>=0.7.0",
-    # "langfuse>=2.60.2",
+    "wandb>=0.21.0",
+    "deepeval>=3.3.0",
+    # "evidently>=0.7.11",
+    # "langfuse>=3.2.1",
     # "agentops "
-    "unitycatalog-ai>=0.3.0",
-    "unitycatalog-client>=0.2.1",
-    "weave>=0.51.41",
+    "unitycatalog-ai>=0.3.1",
+    "unitycatalog-client>=0.3.0",
+    "weave>=0.51.56",
 ]
 
 [project.urls]

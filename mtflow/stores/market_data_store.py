@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TypeAlias
 if TYPE_CHECKING:
     import datetime
-    from pfeed.typing import tDataSource, GenericFrame
+    from pfeed._typing import tDataSource, GenericFrame
     from pfeed.enums import DataStorage
     from pfeed.feeds.market_feed import MarketFeed
     from pfeed.data_models.market_data_model import MarketDataModel
-    from pfund.typing import ComponentName
+    from pfund._typing import ComponentName
     from pfund.datas.resolution import Resolution
     from pfund.products.product_base import BaseProduct
 
@@ -36,7 +36,7 @@ class MarketDataStore(BaseDataStore):
             data_key = self._generate_data_key(
                 data_source=data_source,
                 data_origin=data_origin,
-                product=product.name,
+                product=product.key,
                 resolution=repr(resolution),
             )
             df = self._get_historical_data(
@@ -94,3 +94,8 @@ class MarketDataStore(BaseDataStore):
         )
         # TEMP
         print('***got historical data:\n', df)
+
+    # TODO:
+    def swap_live_for_eod(self):
+        '''Discard the interim live-stream buffer and load the official end-of-day dataset (if any).'''
+        pass

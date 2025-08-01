@@ -2,16 +2,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pfund.enums import Database
-    from pfeed.enums import DataTool
-    from pfund.typing import Component, ComponentName
+    from pfund._typing import Component
     from pfund.external_listeners import ExternalListeners
     from mtflow.monitor import SystemMonitor
     from mtflow.recorder import DataRecorder
     from mtflow.profiler import Profiler
 
-from pfeed.engine import DataEngine
-from pfeed.enums import DataTool
+import logging
+
 from pfund.enums import RunMode
+
+
+logger = logging.getLogger('mtflow')
 
 
 class TradeKernel:
@@ -24,22 +26,12 @@ class TradeKernel:
     def __init__(
         self, 
         database: Database | None, 
-        data_tool: DataTool,
-        use_deltalake: bool,
         external_listeners: ExternalListeners,
     ):
-        import logging
         from mtflow.orchestrator import Orchestrator
         from mtflow.scheduler import Scheduler
         from mtflow.registry import Registry
         
-        self._logger = logging.getLogger('mtflow')
-        self._data_tool: DataTool = data_tool
-        self._use_deltalake: bool = use_deltalake
-        self._data_engine = DataEngine(
-            data_tool=self._data_tool,
-            use_deltalake=self._use_deltalake
-        )
         self._database: Database | None = database
         self._external_listeners = external_listeners
         self._registry = Registry()
@@ -49,10 +41,6 @@ class TradeKernel:
         self._recorder: DataRecorder | None = None
         self._profiler: Profiler | None = None
         self._setup_external_listeners()
-    
-    @property
-    def data_engine(self) -> DataEngine:
-        return self._data_engine
     
     def _setup_external_listeners(self):
         if self._external_listeners.notebooks:
