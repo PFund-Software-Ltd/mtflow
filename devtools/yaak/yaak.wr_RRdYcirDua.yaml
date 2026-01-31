@@ -1,0 +1,16 @@
+type: websocket_request
+model: websocket_request
+id: wr_RRdYcirDua
+createdAt: 2026-01-31T01:57:41.181787
+updatedAt: 2026-01-31T01:57:49.963390
+workspaceId: wk_2dhA3P32LF
+folderId: null
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+message: ''
+name: ''
+sortPriority: -1769824661180.0
+url: ws://localhost:8000/v1
+urlParameters: []

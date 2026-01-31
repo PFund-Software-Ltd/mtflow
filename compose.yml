@@ -1,0 +1,30 @@
+name: mtflow
+volumes:
+  redis_data:
+  # unitycatalog_data:
+services:
+  prometheus:
+    image: prom/prometheus:v3.9.1
+    container_name: prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    profiles:
+      - prometheus
+  redis-stack:
+    image: redis/redis-stack:7.4.0-v8
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_UI_PORT:-8001}:8001"
+    volumes:
+      - redis_data:/data
+    profiles:
+      - redis-stack
+  # unitycatalog:
+  #   image: unitycatalog/unitycatalog:v0.2.1
+  #   ports:
+  #     - "${UC_PORT:-8080}:8080"
+  #   volumes:
+  #     - ./etc/conf:/opt/unitycatalog/etc/conf
+  #     - unitycatalog_data:/opt/unitycatalog/etc/data
+  #   profiles:
+  #     - unitycatalog

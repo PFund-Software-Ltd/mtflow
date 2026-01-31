@@ -3,39 +3,85 @@ authors = ["softwareentrepreneer <softwareentrepreneer+mtflow@gmail.com>"]
 channels = ["conda-forge"]
 name = "mtflow"
 platforms = ["osx-arm64", "linux-64"]
-version = "0.0.1.dev2"
+# updating this needs to also update the version in the ci.yml and templates/ci-workflow-template.yml files
+requires-pixi = ">=0.63.2"  # command: pixi workspace requires-pixi set ">=0.63.2"
 
 [tasks]
-
+dev = "mtflow server run --reload --debug --web-concurrency 1"
 
 [tasks.test-all]
 depends-on = [
-  { task = "test", environment = "test-py311" },
-  { task = "test", environment = "test-py312" },
-  { task = "test", environment = "test-py313" },
+  { task = "test", environment = "py311" },
+  { task = "test", environment = "py312" },
+  { task = "test", environment = "py313" },
 ]
 
 [dependencies]
-python = ">=3.11"
-uv = ">=0.7.11"
+python = ">=3.11.14"
+uv = ">=0.9.28"
 
-# TODO
 [pypi-dependencies]
-pfeed = ">=0.0.5"
-litestar = { version = ">=2.16.0", extras = ["standard"] }
+# pfund-kit = ">=0.1.1"
+# TEMP
+pfund-kit = { path = "../pfund-kit", editable = true }
+msgspec = ">=0.20.0"
+pydantic = ">=2.12.5"
+logfire = ">=4.21.0"
+litestar = { version = ">=2.19.0", extras = ["standard"] }
+websockets = ">=15.0.1"
+psutil = ">=7.2.2"
+apscheduler = ">=3.11.2"
+joblib = ">=1.5.3"
+ipython = ">=9.9.0"
+gitpython = ">=3.1.46"
 
 [environments]
-test-py311 = ["py311", "test"]
-test-py312 = ["py312", "test"]
-test-py313 = ["py313", "test"]
+default = ["py311", "dev", "optional"]
+py311 = ["py311", "test", "optional"]
+py312 = ["py312", "test", "optional"]
+py313 = ["py313", "test", "optional"]
 
-[feature.test.dependencies]
-pytest = ">=8.4.0"
-pytest-cov = ">=6.1.1"
-pytest-mock = ">=3.14.1"
-pytest-xdist = ">=3.7.0"
+[feature.optional.pypi-dependencies]
+
+[feature.optional.dependencies]
+ta-lib = ">=0.6.4"
+# Installing ta-lib as a non‑PyPI dependency can cause pixi to pin the latest numpy, 
+# which may not satisfy other PyPI constraints (e.g., numba). Lower numpy version to workaround this.
+numpy = "<2.4.0"  
+
+[feature.dev.pypi-dependencies]
+afterpython = ">=0.2.0"
+mtflow = { path = ".", editable = true }
+pfund = { path = "../pfund", editable = true, extras = ['ibkr', 'ta-lib'] }
+pfeed = { path = "../pfeed", editable = true, extras = ['hf', "duckdb", 'lancedb', 'prefect', 'yfinance', 'fmp'] }
+pfolio = { path = "../pfolio", editable = true }
+pfund-plot = { path = "../pfund-plot", editable = true, extras = ['marimo', 'jupyter'] }
+torch = ">=2.10.0"
+scikit-learn = ">=1.8.0"
+mlflow = ">=3.9.0"
+trackio = ">=0.15.0"
+optuna = ">=4.7.0"
+optuna-dashboard = ">=0.20.0"
+langfuse = ">=3.11.2"
+deepeval = ">=3.7.9"
+unitycatalog-ai = ">=0.3.2"
+unitycatalog-client = ">=0.3.1"
+
+# TEMP
+[pypi-options.dependency-overrides]
+mtflow = { path = ".", editable = true }
+pfund = { path = "../pfund", editable = true, extras = ['ibkr', 'ta-lib']}
+pfeed = { path = "../pfeed", editable = true, extras = ['hf', "duckdb", 'lancedb', 'prefect', 'yfinance', 'fmp'] }
+pfolio = { path = "../pfolio", editable = true }
+pfund-plot = { path = "../pfund-plot", editable = true, extras = ['marimo', 'jupyter']}
+pfund-kit = { path = "../pfund-kit", editable = true }
+
+[feature.test.pypi-dependencies]
+pytest = ">=9.0.2"
+pytest-cov = ">=7.0.0"
+pytest-mock = ">=3.15.1"
+pytest-xdist = ">=3.8.0"
 [feature.test.tasks]
-test = "pytest"
 
 [feature.py311.dependencies]
 python = "3.11.*"

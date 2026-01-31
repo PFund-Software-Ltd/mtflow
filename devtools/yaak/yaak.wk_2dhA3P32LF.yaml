@@ -1,0 +1,15 @@
+type: workspace
+model: workspace
+id: wk_2dhA3P32LF
+createdAt: 2026-01-30T13:38:29.826457
+updatedAt: 2026-01-30T13:38:29.826458
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: mtflow
+encryptionKeyChallenge: null
+settingValidateCertificates: true
+settingFollowRedirects: true
+settingRequestTimeout: 0
+settingDnsOverrides: []

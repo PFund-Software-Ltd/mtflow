@@ -16,6 +16,7 @@ from pfund.enums import RunMode
 logger = logging.getLogger('mtflow')
 
 
+# TODO: should it also be a meta-engine and support add_engine()?
 class TradeKernel:
     '''
     Low-level operational runtime of the pfund's trade engine .

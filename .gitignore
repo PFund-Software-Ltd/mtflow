@@ -208,3 +208,5 @@ tests/data/
 *.egg-info
 
 .python-version
+
+.claude/

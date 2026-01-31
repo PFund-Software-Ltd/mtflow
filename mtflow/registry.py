@@ -7,7 +7,6 @@ from pfeed.enums.data_category import DataCategory
 from pfund.enums.component_type import ComponentType
 
 
-DataKey: TypeAlias = str
 # TEMP: remove these when they are defined in pfund.typing
 EngineMetadata: TypeAlias = dict
 ComponentMetadata: TypeAlias = dict
@@ -23,8 +22,8 @@ class Registry:
             ComponentType.feature: {},
             ComponentType.indicator: {},
         }
-        self._data_registries: dict[DataCategory, dict[DataKey, MarketDataMetadata]] = {
-            DataCategory.MARKET_DATA: {},
+        self._data_registries: dict[DataCategory, list[MarketDataMetadata]] = {
+            DataCategory.MARKET_DATA: [],
         }
     
     # TODO: show the DAG of the trading store
@@ -57,4 +56,4 @@ class Registry:
 
     def register_market_data(self, metadata: MarketDataMetadata):
         data_registry = self.get_data_registry(metadata['data_category'])
-        data_registry[metadata['key']] = metadata
+        data_registry.append(metadata)

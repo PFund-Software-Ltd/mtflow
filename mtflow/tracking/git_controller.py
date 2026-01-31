@@ -18,7 +18,7 @@ class GitController:
     
     def get_last_n_commit(self, n=1) -> list[str]:
         if not self._repo:
-            raise ValueError('No git repository found')        
+            raise ValueError('No git repository found')
         commits: list[Commit] = list(self._repo.iter_commits(paths=self._repo_path, max_count=n))
         return [commit.hexsha for commit in commits]
     

@@ -65,7 +65,7 @@ def _start_process(strategy: BaseStrategy, stop_flag: Value):
 
 
 # TODO: should do ping-pong with the trade engine
-class Orchestrator:
+class RayManager:
     '''
     Orchestrate Ray actors, and processes
     '''
@@ -83,9 +83,9 @@ class Orchestrator:
         # self._strategy_procs = {}
         # self._last_pong_ts = defaultdict(lambda: time.time())
     
-    def _init_ray(self):
+    def _init_ray(self, **kwargs):
         if not ray.is_initialized():
-            ray.init()
+            ray.init(**kwargs)
 
     def _shutdown_ray(self):
         if ray.is_initialized():

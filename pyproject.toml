@@ -23,48 +23,37 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "pfeed>=0.0.5",
-    "apscheduler>=3.11.0",
-    "ipython>=9.4.0",
-    "gitpython>=3.1.44",
-    "joblib>=1.5.1",
-    "mlflow>=3.1.4",
-    "optuna>=4.4.0",
+    "pfund-kit>=0.1.2",
+    "msgspec>=0.20.0",
+    "pydantic>=2.12.5",
+    "logfire>=4.21.0",
+    "litestar[standard]>=2.19.0",
+    "websockets>=15.0.1",
+    "psutil>=7.2.2",
+    "apscheduler>=3.11.2",
+    "joblib>=1.5.3",
+    "ipython>=9.9.0",
+    "gitpython>=3.1.46",
 ]
 
 [project.optional-dependencies]
-core = [
-    "litestar[standard]>=2.16.0",
-    "pfeed[core]>=0.0.5",
-    "psutil>=7.0.0",
-    # TEMP: to be removed after experiments
-    "wandb>=0.21.0",
-    "deepeval>=3.3.0",
-    # "evidently>=0.7.11",
-    # "langfuse>=3.2.1",
-    # "agentops "
-    "unitycatalog-ai>=0.3.1",
-    "unitycatalog-client>=0.3.0",
-    "weave>=0.51.56",
-]
+# telegram = ["python-telegram-bot>=22.3.0"]
+
+[project.scripts]
+mtflow = "mtflow.__main__:run_cli"
+
+[project.entry-points."pfund_shell.commands"]
+mtflow = "mtflow.cli:mtflow_group"
 
 [project.urls]
 homepage = "https://pfund.ai"
 repository = "https://github.com/PFund-Software-Ltd/mtflow"
 documentation = "https://mtflow-docs.pfund.ai"
 
-[tool.uv.sources]
-pfund = { path = "../pfund", editable = true }
-pfeed = { path = "../pfeed", editable = true }
-pfolio = { path = "../pfolio", editable = true }
-pfund-plot = { path = "../pfund-plot", editable = true }
-
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.9.28,<0.10.0"]
+build-backend = "uv_build"
 
-[tool.hatch.build.targets.sdist]
-include = ['/mtflow', 'docker-compose.yml']
-
-[tool.hatch.build.targets.wheel]
-include = ['/mtflow', 'docker-compose.yml']
+[tool.uv.build-backend]
+module-name = "mtflow"
+module-root = ""
