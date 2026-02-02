@@ -153,24 +153,25 @@ class WebSocketServer:
             data_struct: EventStruct = convert(data, type=Event[data['event']].event_class)
 
             # Start handling data events
-            if data_struct.event == Event.ping:
-                await self._send(ws, {'event': Event.pong, 'data': {'ts': time.time()}})
-            # TODO: check if channels are valid in subscribe/unsubscribe, if subscription fails, send data with "error" field (see event.py)
-            elif data_struct.event == Event.subscribe:
-                channels = data_struct.data.channels
-                await self._subscribe(ws, channels)
-                # send message to client to indicate subscribe success 
-                await self._send(ws, {'event': Event.subscribe, 'data': {'channels': channels, 'ts': time.time()}})
-            elif data_struct.event == Event.unsubscribe:
-                channels = data_struct.data.channels
-                await self._unsubscribe(ws, channels)
-                # send message to client to indicate unsubscribe success
-                await self._send(ws, {'event': Event.unsubscribe, 'data': {'channels': channels, 'ts': time.time()}})
-            elif data_struct.event in [Event.data, Event.engine, Event.fund]:
-                # use litestar's channels plugin to publish data to all subscribers
-                self._channels_plugin.publish(data_bytes, channels=data_struct.data.channel)
-            else:
-                self._logger.error(f'Unknown event {data_struct} from {client_id}')
+            match data_struct.event:
+                case Event.ping:
+                    await self._send(ws, {'event': Event.pong, 'data': {'ts': time.time()}})
+                # TODO: check if channels are valid in subscribe/unsubscribe, if subscription fails, send data with "error" field (see event.py)
+                case Event.subscribe:
+                    channels = data_struct.data.channels
+                    await self._subscribe(ws, channels)
+                    # send message to client to indicate subscribe success 
+                    await self._send(ws, {'event': Event.subscribe, 'data': {'channels': channels, 'ts': time.time()}})
+                case Event.unsubscribe:
+                    channels = data_struct.data.channels
+                    await self._unsubscribe(ws, channels)
+                    # send message to client to indicate unsubscribe success
+                    await self._send(ws, {'event': Event.unsubscribe, 'data': {'channels': channels, 'ts': time.time()}})
+                case Event.data | Event.engine | Event.fund:
+                    # use litestar's channels plugin to publish data to all subscribers
+                    self._channels_plugin.publish(data_bytes, channels=data_struct.data.channel)
+                case _:
+                    self._logger.error(f'Unknown event {data_struct} from {client_id}')
  
             return data_struct
         # NOTE: do NOT catch all errors here, let it propagate up to handler so the while true loop in app.py handler() can exit
