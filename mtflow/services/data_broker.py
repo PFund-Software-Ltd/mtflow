@@ -30,6 +30,21 @@ class DataBroker:
         data_engine_port = data_engine_zmq.get_ports_in_use(data_engine_zmq.sender)[0]
         self._settings.zmq_ports.update({ sender_name: data_engine_port })
     
+    # FIXME
+    def gather(self):
+        # TODO: if add IB feed and data source is also IB (not sth like databento), requires passing account that includes host, port, client_id to add_feed()
+        self._data_engine \
+        .add_feed(data.source, data.category) \
+        .stream(
+            product=str(data.product.basis),
+            resolution=repr(data.resolution),
+            to_storage=None,
+            env=self._env,
+            **data.product.specs
+        )
+        # NOTE: load(to_storage=...) is not called here so that users can manually call gather()
+        # and add transform() to the feeds in data engine.
+    
     def run(self, num_data_workers: int | None=None, **ray_kwargs):
         '''
         Args:
