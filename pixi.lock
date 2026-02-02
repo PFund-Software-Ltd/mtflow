@@ -6569,10 +6569,9 @@ packages:
 - pypi: ./
   name: mtflow
   version: 0.0.1.dev2
-  sha256: ee8eacf0ce99c94de3f19d4918725672bfa97b2ea39dfa785832af1bd4271058
+  sha256: ef641a4b3651c4f8657e055eeef6a60b7c594ae2022444cfa97e1e4f259762ba
   requires_dist:
-  - pfund-kit>=0.1.1
-  - msgspec>=0.20.0
+  - pfund-kit>=0.1.2
   - pydantic>=2.12.5
   - logfire>=4.21.0
   - litestar[standard]>=2.19.0
@@ -7994,7 +7993,7 @@ packages:
 - pypi: ../pfund
   name: pfund
   version: 0.0.2
-  sha256: 2319b7e22c61ac99da1404ac4c6de6e8bf2c6746ef1fd39522de87f01b86ff12
+  sha256: cf4b1c1294d3eba791d9285bad1b8f74c11c43ef30dc78257df20f139554ee9b
   requires_dist:
   - pfeed[duckdb] @ file:///Users/stephenyau/pfund.ai/pfeed
   - pfolio @ file:///Users/stephenyau/pfund.ai/pfolio
@@ -8018,8 +8017,8 @@ packages:
   requires_python: '>=3.11'
 - pypi: ../pfund-kit
   name: pfund-kit
-  version: 0.1.1
-  sha256: 06eb654239862d0220475bc933047206ae5819a2858ac8e3ca287eba8d27b2d3
+  version: 0.1.2
+  sha256: 16e6c50bcc1282a2b643433c04550ae94fabccdb1071ac7c714fb5733d6522e4
   requires_dist:
   - rich>=14.2.0
   - tqdm>=4.67.1

@@ -24,7 +24,6 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     "pfund-kit>=0.1.2",
-    "msgspec>=0.20.0",
     "pydantic>=2.12.5",
     "logfire>=4.21.0",
     "litestar[standard]>=2.19.0",

@@ -1,4 +1,4 @@
-from typing import Literal, TypeAlias
+from typing import Protocol, TypeAlias, TypeVar, Literal, runtime_checkable
 
 from enum import StrEnum
 
@@ -8,6 +8,25 @@ from mtflow.enums.channel import Channel
 
 
 FullChannelName: TypeAlias = str
+@runtime_checkable
+class EventLike(Protocol):
+    event: str
+    data: Struct | None
+
+EventStruct = TypeVar("EventStruct", bound=EventLike)
+
+
+__all__ = [
+    'Event',
+    'ConnectedEvent',
+    'DisconnectedEvent',
+    'SubscribeEvent',
+    'UnsubscribeEvent',
+    'PingPongEvent',
+    'DataEvent',
+    'EngineEvent',
+    'FundEvent',
+]
 
 
 class Event(StrEnum):
@@ -18,12 +37,16 @@ class Event(StrEnum):
 
     subscribe = 'subscribe'
     unsubscribe = 'unsubscribe'
+    connected = 'connected'
+    disconnected = 'disconnected'
     ping = 'ping'
     pong = 'pong'
 
     @property
     def event_class(self) -> type[Struct]:
         return {
+            Event.connected: ConnectedEvent,
+            Event.disconnected: DisconnectedEvent,
             Event.subscribe: SubscribeEvent,
             Event.unsubscribe: UnsubscribeEvent,
             Event.ping: PingPongEvent,
@@ -32,34 +55,50 @@ class Event(StrEnum):
             Event.engine: EngineEvent,
             Event.data: DataEvent,
         }[self]
+
+
+class ConnectedEvent(Struct):
+    class Data(Struct, omit_defaults=True):
+        ts: float | None = None  # used by server -> client only
+        
+    data: Data
+    event: Literal['connected'] = Event.connected
     
+    
+class DisconnectedEvent(Struct):
+    class Data(Struct, omit_defaults=True):
+        ts: float | None = None  # used by server -> client only
+        
+    data: Data
+    event: Literal['disconnected'] = Event.disconnected
+
 
 class SubscribeEvent(Struct):
-    class Data(Struct):
+    class Data(Struct, omit_defaults=True):
+        channels: list[FullChannelName]
         ts: float | None = None  # used by server -> client only
         # NOTE: conceptually, error is None = successful
         error: str | None = None  # used by server -> client only
-        channels: list[FullChannelName]
         
-    event: Literal[Event.subscribe] = Event.subscribe
     data: Data
+    event: Literal['subscribe'] = Event.subscribe
 
 
 class UnsubscribeEvent(Struct):
-    class Data(Struct):
+    class Data(Struct, omit_defaults=True):
+        channels: list[FullChannelName]
         ts: float | None = None  # used by server -> client only
         error: str | None = None  # used by server -> client only
-        channels: list[FullChannelName]
         
-    event: Literal[Event.unsubscribe] = Event.unsubscribe
     data: Data
+    event: Literal['unsubscribe'] = Event.unsubscribe
 
 
-class PingPongEvent(Struct):
-    class Data(Struct):
+class PingPongEvent(Struct, omit_defaults=True):
+    class Data(Struct, omit_defaults=True):
         ts: float | None = None
     
-    event: Literal[Event.ping | Event.pong]
+    event: Literal['ping', 'pong']
     data: Data | None = None
     
     
@@ -75,11 +114,11 @@ class EngineEvent(Struct):
 
 # TODO
 class FundEvent(Struct):
-    class Data(Struct):
-        ts: float | None = None  # used by server -> client only
-        error: str | None = None  # used by server -> client only
+    class Data(Struct, omit_defaults=True):
         channel: FullChannelName
         message: str
+        ts: float | None = None  # used by server -> client only
+        error: str | None = None  # used by server -> client only
     
-    event: Literal[Event.fund] = Event.fund
     data: Data
+    event: Literal['fund'] = Event.fund

@@ -660,7 +660,6 @@ dependencies = [
     { name = "joblib" },
     { name = "litestar", extra = ["standard"] },
     { name = "logfire" },
-    { name = "msgspec" },
     { name = "pfund-kit" },
     { name = "psutil" },
     { name = "pydantic" },
@@ -675,8 +674,7 @@ requires-dist = [
     { name = "joblib", specifier = ">=1.5.3" },
     { name = "litestar", extras = ["standard"], specifier = ">=2.19.0" },
     { name = "logfire", specifier = ">=4.21.0" },
-    { name = "msgspec", specifier = ">=0.20.0" },
-    { name = "pfund-kit", specifier = ">=0.1.1" },
+    { name = "pfund-kit", specifier = ">=0.1.2" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "websockets", specifier = ">=15.0.1" },
@@ -897,7 +895,7 @@ wheels = [
 
 [[package]]
 name = "pfund-kit"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -911,9 +909,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "trogon" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/ee/913c83201714c7973b7c47e969f0b93471d6f9236bf8231bb2327f24b2e0/pfund_kit-0.1.1.tar.gz", hash = "sha256:a55830eca97cbca30270aebbfdf58e2b391072d294eb83715ea34df4605bb7db", size = 39278, upload-time = "2026-01-28T17:01:24.792Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/8a/71f17d6b6f251fd289612637f1ca90c3a4b04e96660bdac5dd643983b2a7/pfund_kit-0.1.2.tar.gz", hash = "sha256:d93819395dddfcdc14b71393a786bb0a5f79b2e11992649b70a7462ae3a42a6d", size = 39756, upload-time = "2026-01-31T23:16:03.844Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3d/f8/a3e7809b9d07bef737d3d8fe1d988534b96b82434e22f5a5f88ee7c13d3a/pfund_kit-0.1.1-py3-none-any.whl", hash = "sha256:b0c00d7c20cf7bbc458eb338a1c21b3692bb95682919803e94dd99ed52281ae0", size = 54637, upload-time = "2026-01-28T17:01:25.587Z" },
+    { url = "https://files.pythonhosted.org/packages/34/91/f4ed3f2ac707571fb841350aab8e19ef814dfec49383ef71008dc3026a36/pfund_kit-0.1.2-py3-none-any.whl", hash = "sha256:7967151190dbf0f464a55b969a93b8ed994fcd67d9983aa30cab3cd23c96d6bf", size = 55171, upload-time = "2026-01-31T23:16:05.18Z" },
 ]
 
 [[package]]
