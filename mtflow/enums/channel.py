@@ -77,12 +77,26 @@ class EngineChannelTopic(StrEnum):
 
 
 class FundChannelTopic(StrEnum):
-    channel = 'channel'  # chat channel
+    chat = 'chat'  # chat channel
     agent = 'agent'  # agent's llm input and output
     
+    @overload
+    def create_topic(
+        self: Literal[
+            FundChannelTopic.chat,
+        ],
+        channel_name: str,
+    ) -> str:
+        ...
+
+    @overload
+    def create_topic(
+        self: Literal[
+            FundChannelTopic.agent,
+        ],
+        agent_name: str,
+    ) -> str:
+        ...
+
     def create_topic(self, name: str) -> str:
-        '''
-        Args:
-            name: channel or agent name
-        '''
         return ':'.join([self.value, name])
