@@ -178,11 +178,19 @@ def configure_logging(logging_config: dict | None=None, debug: bool=False) -> di
 
 class MTFlowConfig(Configuration):
     def __init__(self):
+        from pfund_kit.utils import load_env_file
+        load_env_file(verbose=False)
         super().__init__(project_name=project_name, source_file=__file__)
 
     def _initialize_from_data(self):
         """No additional config attributes to initialize."""
         self.num_workers = int(self._data.get('num_workers', 1))
+    
+    def to_dict(self) -> dict:
+        return {
+            **super().to_dict(),
+            'num_workers': self.num_workers,
+        }
     
     def prepare_docker_context(self):
         pass

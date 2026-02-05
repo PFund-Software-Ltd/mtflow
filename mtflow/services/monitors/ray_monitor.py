@@ -65,6 +65,7 @@ def _start_process(strategy: BaseStrategy, stop_flag: Value):
 
 
 # TODO: should do ping-pong with the trade engine
+# TODO: this must check if the running ray tasks/actors < total cpus in ray.init and os cpus
 class RayManager:
     '''
     Orchestrate Ray actors, and processes

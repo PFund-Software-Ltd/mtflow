@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import Literal, overload
 from enum import StrEnum
 
 
@@ -34,13 +37,43 @@ class DataChannelTopic(StrEnum):
     
     
 class EngineChannelTopic(StrEnum):
+    # listen to component's signals:
+    strategy = 'strategy'
+    model = 'model'
+    feature = 'feature'
+    indicator = 'indicator'
+    # listen to account's data:
     trade = 'trade'
     order = 'order'
     position = 'position'
     balance = 'balance'
 
-    def create_topic(self, account: str) -> str:
-        return ':'.join([self.value, account])
+    @overload
+    def create_topic(
+        self: Literal[
+            EngineChannelTopic.strategy,
+            EngineChannelTopic.model,
+            EngineChannelTopic.feature,
+            EngineChannelTopic.indicator,
+        ],
+        component_name: str,
+    ) -> str:
+        ...
+
+    @overload
+    def create_topic(
+        self: Literal[
+            EngineChannelTopic.trade,
+            EngineChannelTopic.order,
+            EngineChannelTopic.position,
+            EngineChannelTopic.balance,
+        ],
+        account: str,
+    ) -> str:
+        ...
+
+    def create_topic(self, name: str) -> str:
+        return ':'.join([self.value, name])
 
 
 class FundChannelTopic(StrEnum):
